@@ -111,7 +111,7 @@ class Engine:
             if obs.bait is not None and obs.bait > 0:
                 self.bait = obs.bait
             if now > self.deadline:
-                self.pause("等待咬钩超时，请检查是否抛竿成功")
+                self.pause("等待咬钩超时，请检查是否抛竿成功及水花阈值")
                 return []
             if not self.zoomed and now-self.entered >= self.cfg.zoom_delay:
                 self.zoomed = True
@@ -126,6 +126,9 @@ class Engine:
                 self.entered = now
                 self.deadline = now + (self.cfg.reload_wait if reload_needed else self.cfg.reel_wait)
                 return ["hook"]
+            if (not self.gate.armed and
+                    now-self.gate.cast_at >= self.cfg.cast_blind+self.cfg.ready_timeout):
+                self.pause("水面亮色持续超标，检测未就绪；请校准水花区域和亮度阈值")
             return []
         if self.state in ("reel", "reload"):
             if obs.bait == 0 and self.state != "reload":
@@ -144,9 +147,14 @@ class Engine:
         return []
 
     def status(self, now):
+        if self.state == "prepare":
+            return f"鱼饵未确认，尚未点击 · {max(0, self.deadline-now):.0f}s"
         if self.state == "fishing" and not self.gate.armed:
             remain = max(0, self.cfg.cast_blind-(now-self.gate.cast_at))
-            return f"入水屏蔽 {remain:.1f}s" if remain else "等待水面平静"
+            if remain:
+                return f"入水屏蔽 {remain:.1f}s"
+            waiting = now-self.gate.cast_at-self.cfg.cast_blind
+            return "亮色持续超标，请检查区域或亮度阈值" if waiting >= 3 else "等待水面平静"
         if self.state in ("reel", "reload"):
             return f"{self.LABELS[self.state]} · {max(0, self.deadline-now):.1f}s"
         return self.reason or self.LABELS[self.state]

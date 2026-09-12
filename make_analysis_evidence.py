@@ -1,12 +1,16 @@
 """Create a compact visual evidence panel from the original recording."""
 from pathlib import Path
+import argparse
 import cv2
 from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parent
 OUT = ROOT / "analysis" / "zoom"
-VIDEO = r"D:\GameVideos\deltaForceRecord\15623878227063700672\record\record20260912-233726.mp4"
-cap = cv2.VideoCapture(VIDEO)
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument("video", help="Path to the original 1728 x 1080 analysis recording")
+args = parser.parse_args()
+cap = cv2.VideoCapture(args.video)
+OUT.mkdir(parents=True, exist_ok=True)
 font = ImageFont.truetype("C:/Windows/Fonts/msyh.ttc", 23)
 small = ImageFont.truetype("C:/Windows/Fonts/msyh.ttc", 18)
 board = Image.new("RGB", (1320, 568), "#15191f")

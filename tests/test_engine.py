@@ -93,6 +93,24 @@ class EngineTests(unittest.TestCase):
         self.assertEqual(engine.update(4, Observation()), [])
         self.assertEqual(engine.state, "paused")
 
+    def test_bright_water_cannot_trigger_hook_and_explains_failure(self):
+        engine = Engine(Config(bait_vision=False))
+        engine.start(0, already_cast=True)
+        actions = []
+        for i in range(1, 250):
+            actions += engine.update(i*.05, Observation(.92))
+        self.assertEqual(actions, [])
+        self.assertEqual(engine.state, "paused")
+        self.assertIn("亮色持续超标", engine.reason)
+
+    def test_water_clearing_before_deadline_can_still_arm(self):
+        engine = Engine(Config(bait_vision=False))
+        engine.start(0, already_cast=True)
+        for i in range(1, 220):
+            engine.update(i*.05, Observation(.92 if i < 180 else 0))
+        self.assertTrue(engine.gate.armed)
+        self.assertEqual(engine.state, "fishing")
+
     def test_non_finite_parameter_rejected(self):
         with self.assertRaises(ValueError):
             Config(reel_wait=float("nan")).validate()

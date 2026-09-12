@@ -7,6 +7,7 @@ import mss
 import numpy as np
 from PIL import Image, ImageTk
 
+from . import __version__
 from .config import Config, ROOT
 from .runtime import Runner
 from .replay import replay_video, SAMPLE_CASTS
@@ -65,6 +66,7 @@ class App(tk.Tk):
         self.configure(bg=BG)
         self.events = queue.Queue()
         self.latest_frame = None
+        self.displayed_frame = None
         self.frame_lock = threading.Lock()
         self.runner = self.replay_thread = None
         self.replay_stop = threading.Event()
@@ -113,7 +115,7 @@ class App(tk.Tk):
         head = ttk.Frame(outer)
         head.pack(fill="x")
         ttk.Label(head, text="钓鱼经验机", font=("Microsoft YaHei UI", 23, "bold")).pack(side="left")
-        ttk.Label(head, text="LOCAL VISION  /  0.1", style="Muted.TLabel").pack(side="right")
+        ttk.Label(head, text=f"LOCAL VISION  /  {__version__}", style="Muted.TLabel").pack(side="right")
         ttk.Label(outer, text="水花识别 · 分段等待 · 自动换饵节奏", style="Muted.TLabel").pack(anchor="w", pady=(4, 15))
         target = ttk.Frame(outer)
         target.pack(fill="x")
@@ -136,7 +138,8 @@ class App(tk.Tk):
         self.stop_button.pack(side="left", padx=8)
         ttk.Button(controls, text="框选水花区域", command=lambda: self.calibrate("splash_roi")).pack(side="left", padx=(12, 8))
         ttk.Button(controls, text="框选鱼饵数字", command=lambda: self.calibrate("bait_roi")).pack(side="left")
-        self.status_var = tk.StringVar(value="准备就绪 · 开始后有 5 秒切回游戏")
+        ttk.Button(controls, text="单次左键测试", command=lambda: self.start_countdown(test_click=True)).pack(side="left", padx=(8, 0))
+        self.status_var = tk.StringVar(value="检测区域已载入 · 开始后有 5 秒切回游戏")
         ttk.Label(outer, textvariable=self.status_var, foreground=ACCENT, font=("Microsoft YaHei UI", 12, "bold")).pack(anchor="w", pady=(0, 12))
         body = ttk.Frame(outer)
         body.pack(fill="both", expand=True)
@@ -177,10 +180,15 @@ class App(tk.Tk):
         self.preview = tk.Canvas(preview, width=480, height=220, background="#0c1117", highlightthickness=0)
         self.preview.create_text(240, 110, text="运行后显示中央水花区域\n录像回放也会显示在这里", fill=MUTED, font=("Microsoft YaHei UI", 12))
         self.preview.pack(fill="both", expand=True)
+        self.preview.bind("<Configure>", lambda _: self.redraw_last_frame())
+        preview_info = ttk.Frame(preview)
+        preview_info.pack(side="bottom", fill="x", before=self.preview)
         self.stats_var = tk.StringVar(value="水花 —   鱼饵 —   抛竿 0   提竿信号 0")
-        ttk.Label(preview, textvariable=self.stats_var).pack(anchor="w", pady=(8, 0))
+        ttk.Label(preview_info, textvariable=self.stats_var).pack(anchor="w", pady=(8, 0))
         self.mask_var = tk.BooleanVar(value=False)
-        ttk.Checkbutton(preview, text="显示识别到的亮色区域", variable=self.mask_var).pack(anchor="w")
+        ttk.Checkbutton(preview_info, text="显示识别到的亮色区域", variable=self.mask_var, command=self.redraw_last_frame).pack(anchor="w")
+        self.show_bait_var = tk.BooleanVar(value=False)
+        ttk.Checkbutton(preview_info, text="显示鱼饵裁剪（检查是否框对数字）", variable=self.show_bait_var, command=self.redraw_last_frame).pack(anchor="w")
         tabs = ttk.Notebook(right)
         tabs.pack(side="bottom", fill="x", pady=(10, 0), before=preview)
         log_frame, replay_frame = ttk.Frame(tabs, padding=6), ttk.Frame(tabs, padding=8)
@@ -205,6 +213,11 @@ class App(tk.Tk):
                 self.latest_frame = payload
         else:
             self.events.put((kind, payload))
+
+    def redraw_last_frame(self):
+        with self.frame_lock:
+            if self.latest_frame is None and self.displayed_frame is not None:
+                self.latest_frame = self.displayed_frame
 
     def append_log(self, text):
         self.log.configure(state="normal")
@@ -255,11 +268,11 @@ class App(tk.Tk):
     def busy(self):
         return (self.runner and self.runner.is_alive()) or (self.replay_thread and self.replay_thread.is_alive())
 
-    def start_countdown(self):
+    def start_countdown(self, test_click=False):
         if self.busy() or self.countdown_id is not None:
             self.stop()
             return
-        if not self.save_config():
+        if not test_click and not self.save_config():
             return
         try:
             window = self.selected_window()
@@ -273,10 +286,10 @@ class App(tk.Tk):
             if generation != self.pending_generation:
                 return
             if seconds:
-                self.status_var.set(f"{seconds} 秒后开始，请切回所选游戏窗口")
+                self.status_var.set(f"{seconds} 秒后{'仅点击一次左键' if test_click else '开始'}，请切回所选游戏窗口")
                 self.countdown_id = self.after(1000, lambda: countdown(seconds-1))
             else:
-                self.runner = Runner(self.cfg, window, self.mode.get() == "automatic", self.already_cast.get(), self.publish)
+                self.runner = Runner(self.cfg, window, test_click or self.mode.get() == "automatic", self.already_cast.get(), self.publish, test_click=test_click)
                 self.runner.start()
         countdown(5)
 
@@ -360,8 +373,20 @@ class App(tk.Tk):
             elif kind == "stop":
                 self.stop()
             elif kind == "log":
-                names = {"cast": "抛竿", "hook": "提竿信号", "zoom": "右键放大", "start": "开始", "stop": "停止"}
-                self.append_log(f'{value["time"][11:]}  {names.get(value["kind"], value["kind"])}  {value.get("reason", "")}')
+                names = {"cast": "已发送抛竿两次点击", "hook": "提竿信号", "zoom": "已发送右键操作", "start": "开始", "stop": "停止", "test_click": "已发送一次左键测试", "bait_snapshot": "鱼饵裁剪已保存"}
+                if value["kind"] == "sample":
+                    # Detailed samples go to the local file, without flooding the UI.
+                    continue
+                detail = value.get("reason", "")
+                if value["kind"] == "start":
+                    detail = "自动循环；输入是否生效需观察游戏" if value["automatic"] else "识别预览，本轮不会点击鼠标"
+                    if value.get("test_click"):
+                        detail = "单次左键测试，不等待鱼饵或水花，不会自动循环"
+                elif value["kind"] == "focus":
+                    detail = f'当前前台：{value["foreground_title"]} [PID {value["foreground_pid"]}]'
+                elif value["kind"] == "permissions":
+                    detail = f'运行权限：助手 {value["assistant"]["label"]} / 游戏 {value["game"]["label"]}'
+                self.append_log(f'{value["time"][11:]}  {names.get(value["kind"], value["kind"])}  {detail}')
             elif kind in ("error", "hotkey_error"):
                 self.append_log(str(value))
                 self.status_var.set(str(value))
@@ -381,13 +406,18 @@ class App(tk.Tk):
         with self.frame_lock:
             frame, self.latest_frame = self.latest_frame, None
         if frame:
+            self.displayed_frame = frame
             if self.busy():
                 self.status_var.set(frame["status"])
-            self.stats_var.set(f'水花 {frame["score"]*100:.2f}%   鱼饵 {frame.get("bait", "—")}   抛竿 {frame["casts"]}   提竿信号 {frame["hooks"]}')
-            array = cv2.cvtColor(frame["image"], cv2.COLOR_BGR2RGB)
-            if self.mask_var.get():
+            bait_text = frame.get("bait") if frame.get("bait") is not None else "未识别"
+            self.stats_var.set(f'亮色 {frame["score"]*100:.2f}%   鱼饵 {bait_text} ({frame.get("confidence", 0)*100:.0f}%)   抛竿 {frame["casts"]}   提竿信号 {frame["hooks"]}')
+            show_bait = self.show_bait_var.get() and frame.get("bait_image") is not None
+            array = cv2.cvtColor(frame["bait_image"] if show_bait else frame["image"], cv2.COLOR_BGR2RGB)
+            if self.mask_var.get() and not show_bait:
                 array[frame["mask"] > 0] = [64, 209, 179]
             photo = Image.fromarray(array)
+            if show_bait:
+                photo = photo.resize((photo.width*4, photo.height*4), Image.Resampling.NEAREST)
             photo.thumbnail((max(100, self.preview.winfo_width()), max(100, self.preview.winfo_height())), Image.Resampling.LANCZOS)
             self.photo = ImageTk.PhotoImage(photo)
             self.preview.delete("all")

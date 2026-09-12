@@ -10,6 +10,7 @@ if os.name != "nt":
 
 user32 = C.WinDLL("user32", use_last_error=True)
 kernel32 = C.WinDLL("kernel32", use_last_error=True)
+advapi32 = C.WinDLL("advapi32", use_last_error=True)
 PTR = C.c_size_t
 
 
@@ -50,6 +51,44 @@ user32.RegisterHotKey.argtypes = [W.HWND, C.c_int, W.UINT, W.UINT]
 user32.UnregisterHotKey.argtypes = [W.HWND, C.c_int]
 user32.GetMessageW.argtypes = [C.POINTER(W.MSG), W.HWND, W.UINT, W.UINT]
 user32.PostThreadMessageW.argtypes = [W.DWORD, W.UINT, W.WPARAM, W.LPARAM]
+kernel32.OpenProcess.argtypes = [W.DWORD, W.BOOL, W.DWORD]
+kernel32.OpenProcess.restype = W.HANDLE
+kernel32.CloseHandle.argtypes = [W.HANDLE]
+advapi32.OpenProcessToken.argtypes = [W.HANDLE, W.DWORD, C.POINTER(W.HANDLE)]
+advapi32.GetTokenInformation.argtypes = [W.HANDLE, C.c_int, C.c_void_p, W.DWORD, C.POINTER(W.DWORD)]
+advapi32.GetSidSubAuthorityCount.argtypes = [C.c_void_p]
+advapi32.GetSidSubAuthorityCount.restype = C.POINTER(C.c_ubyte)
+advapi32.GetSidSubAuthority.argtypes = [C.c_void_p, W.DWORD]
+advapi32.GetSidSubAuthority.restype = C.POINTER(W.DWORD)
+
+
+def process_integrity(pid):
+    """Read OS token metadata only; no game memory access or privilege changes."""
+    process, token = None, W.HANDLE()
+    try:
+        process = kernel32.OpenProcess(0x1000, False, pid)  # QUERY_LIMITED_INFORMATION
+        if not process or not advapi32.OpenProcessToken(process, 0x0008, C.byref(token)):
+            raise C.WinError(C.get_last_error())
+        size = W.DWORD()
+        advapi32.GetTokenInformation(token, 25, None, 0, C.byref(size))
+        if not size.value:
+            raise C.WinError(C.get_last_error())
+        buffer = C.create_string_buffer(size.value)
+        if not advapi32.GetTokenInformation(token, 25, buffer, size.value, C.byref(size)):
+            raise C.WinError(C.get_last_error())
+        # TOKEN_MANDATORY_LABEL begins with SID_AND_ATTRIBUTES, whose first field is PSID.
+        sid = C.cast(buffer, C.POINTER(C.c_void_p))[0]
+        count = advapi32.GetSidSubAuthorityCount(sid)[0]
+        rid = advapi32.GetSidSubAuthority(sid, count-1)[0]
+        label = "系统" if rid >= 0x4000 else "管理员" if rid >= 0x3000 else "普通" if rid >= 0x2000 else "低"
+        return {"pid": pid, "level": rid, "label": label}
+    except OSError as exc:
+        return {"pid": pid, "level": None, "label": "无法读取", "error": exc.winerror}
+    finally:
+        if token:
+            kernel32.CloseHandle(token)
+        if process:
+            kernel32.CloseHandle(process)
 
 
 def set_dpi_awareness():
@@ -107,11 +146,20 @@ class Mouse:
         return (user32.GetForegroundWindow() == self.hwnd and
                 pid_of(self.hwnd) == self.pid and not user32.IsIconic(self.hwnd))
 
+    def focus_details(self):
+        foreground = user32.GetForegroundWindow()
+        return {"target_hwnd": self.hwnd, "target_pid": self.pid,
+                "target_title": title_of(self.hwnd),
+                "foreground_hwnd": int(foreground or 0),
+                "foreground_pid": pid_of(foreground) if foreground else None,
+                "foreground_title": title_of(foreground) if foreground else ""}
+
     def _event(self, flag):
         event = INPUT(type=0)
         event.mi = MOUSEINPUT(0, 0, 0, flag, 0, 0)
+        C.set_last_error(0)
         if user32.SendInput(1, C.byref(event), C.sizeof(INPUT)) != 1:
-            raise RuntimeError("Windows 未接受鼠标输入，已暂停")
+            raise RuntimeError(f"Windows 未接受鼠标输入（错误码 {C.get_last_error()}），已暂停")
 
     def down(self, button):
         if self.stop_event.is_set() or not self.focused():

@@ -7,6 +7,8 @@ __pycache__/
 *.avi
 local_config.json
 logs/
+docs/resource-benchmark.json
+docs/desktop-memory-snapshot.json
 dist/
 build/
 analysis/zoom/*/sheet_*.jpg

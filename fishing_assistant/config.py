@@ -23,11 +23,12 @@ class Config:
     value_min: int = 80
     saturation_max: int = 100
     fps: int = 30
-    zoom_mode: str = "toggle"
+    zoom_mode: str = "hold"
     bait_vision: bool = True
     initial_bait: int = 5
-    splash_roi: list = field(default_factory=lambda: [680/1728, 300/1080, 360/1728, 350/1080])
-    bait_roi: list = field(default_factory=lambda: [1640/1728, 931/1080, 24/1728, 32/1080])
+    # User-calibrated working preset on a 2560 x 1600 client; scale with the window.
+    splash_roi: list = field(default_factory=lambda: [510/2560, 311/1600, 1651/2560, 932/1600])
+    bait_roi: list = field(default_factory=lambda: [2356/2560, 1365/1600, 110/2560, 71/1600])
 
     def validate(self):
         for name in ("cast_blind", "reel_wait", "reload_wait", "zoom_delay", "calm_time", "confirm_time", "bite_timeout", "ready_timeout"):
