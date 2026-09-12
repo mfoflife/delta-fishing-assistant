@@ -1,0 +1,77 @@
+{
+  "video": "D:\\GameVideos\\deltaForceRecord\\15623878227063700672\\record\\record20260912-233726.mp4",
+  "fps": 60.0,
+  "frames_read": 4143,
+  "cancelled": false,
+  "cast_times_manual": [
+    1.85,
+    11.2,
+    24.65,
+    35.2,
+    46.2,
+    58.7
+  ],
+  "settings": {
+    "cast_blind": 3.5,
+    "reel_wait": 2.8,
+    "reload_wait": 4.8,
+    "zoom_delay": 0.7,
+    "calm_time": 0.2,
+    "confirm_time": 0.025,
+    "bite_timeout": 60.0,
+    "ready_timeout": 12.0,
+    "splash_ratio": 0.007936507936507936,
+    "calm_ratio": 0.003968253968253968,
+    "value_min": 80,
+    "saturation_max": 100,
+    "fps": 30,
+    "zoom_mode": "toggle",
+    "bait_vision": true,
+    "initial_bait": 5,
+    "splash_roi": [
+      0.39351851851851855,
+      0.2777777777777778,
+      0.20833333333333334,
+      0.32407407407407407
+    ],
+    "bait_roi": [
+      0.9490740740740741,
+      0.862037037037037,
+      0.013888888888888888,
+      0.02962962962962963
+    ]
+  },
+  "events": [
+    {
+      "cast": 1,
+      "time_s": 8.2167,
+      "splash_ratio": 0.045135
+    },
+    {
+      "cast": 2,
+      "time_s": 22.3333,
+      "splash_ratio": 0.045373
+    },
+    {
+      "cast": 3,
+      "time_s": 32.85,
+      "splash_ratio": 0.045167
+    },
+    {
+      "cast": 4,
+      "time_s": 43.9,
+      "splash_ratio": 0.044413
+    },
+    {
+      "cast": 5,
+      "time_s": 54.1167,
+      "splash_ratio": 0.047127
+    },
+    {
+      "cast": 6,
+      "time_s": 67.0833,
+      "splash_ratio": 0.043865
+    }
+  ],
+  "note": "人工提供甩竿起点的离线回放；不是实服成功率或独立测试集准确率。"
+}

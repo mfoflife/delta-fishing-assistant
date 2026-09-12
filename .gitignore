@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+.cache/
+*.pyc
+*.mp4
+*.mkv
+*.avi
+local_config.json
+logs/
+dist/
+build/
+analysis/zoom/*/sheet_*.jpg
+analysis/zoom/full/
+analysis/zoom/measurements/hud_*.png
+analysis/zoom/*/metadata.json

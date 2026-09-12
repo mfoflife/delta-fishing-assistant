@@ -1,0 +1,233 @@
+{
+  "scope": "Offline replay of this clip; six manual cast starts; same-clip threshold calibration; not a live automation or independent accuracy test.",
+  "splash_roi_xywh": [
+    680,
+    300,
+    360,
+    350
+  ],
+  "white_pixel_rule": "OpenCV HSV V >= 80 and S <= 100",
+  "trigger": "white pixel count > 1000 for 2 consecutive 60-fps frames",
+  "comparisons": [
+    {
+      "delay_s": 2,
+      "wait_for_calm_0_2s": false,
+      "matched_bites": 0,
+      "false_triggers": 6,
+      "results": [
+        {
+          "cast": 1,
+          "cast_start_estimate_s": 1.85,
+          "trigger_s": 4.2,
+          "matches_visually_labeled_bite": false
+        },
+        {
+          "cast": 2,
+          "cast_start_estimate_s": 11.2,
+          "trigger_s": 13.55,
+          "matches_visually_labeled_bite": false
+        },
+        {
+          "cast": 3,
+          "cast_start_estimate_s": 24.65,
+          "trigger_s": 26.95,
+          "matches_visually_labeled_bite": false
+        },
+        {
+          "cast": 4,
+          "cast_start_estimate_s": 35.2,
+          "trigger_s": 37.533333,
+          "matches_visually_labeled_bite": false
+        },
+        {
+          "cast": 5,
+          "cast_start_estimate_s": 46.2,
+          "trigger_s": 48.483333,
+          "matches_visually_labeled_bite": false
+        },
+        {
+          "cast": 6,
+          "cast_start_estimate_s": 58.7,
+          "trigger_s": 61.0,
+          "matches_visually_labeled_bite": false
+        }
+      ]
+    },
+    {
+      "delay_s": 3,
+      "wait_for_calm_0_2s": false,
+      "matched_bites": 0,
+      "false_triggers": 6,
+      "results": [
+        {
+          "cast": 1,
+          "cast_start_estimate_s": 1.85,
+          "trigger_s": 4.866667,
+          "matches_visually_labeled_bite": false
+        },
+        {
+          "cast": 2,
+          "cast_start_estimate_s": 11.2,
+          "trigger_s": 14.216667,
+          "matches_visually_labeled_bite": false
+        },
+        {
+          "cast": 3,
+          "cast_start_estimate_s": 24.65,
+          "trigger_s": 27.666667,
+          "matches_visually_labeled_bite": false
+        },
+        {
+          "cast": 4,
+          "cast_start_estimate_s": 35.2,
+          "trigger_s": 38.216667,
+          "matches_visually_labeled_bite": false
+        },
+        {
+          "cast": 5,
+          "cast_start_estimate_s": 46.2,
+          "trigger_s": 49.216667,
+          "matches_visually_labeled_bite": false
+        },
+        {
+          "cast": 6,
+          "cast_start_estimate_s": 58.7,
+          "trigger_s": 61.716667,
+          "matches_visually_labeled_bite": false
+        }
+      ]
+    },
+    {
+      "delay_s": 3.5,
+      "wait_for_calm_0_2s": false,
+      "matched_bites": 6,
+      "false_triggers": 0,
+      "results": [
+        {
+          "cast": 1,
+          "cast_start_estimate_s": 1.85,
+          "trigger_s": 8.2,
+          "matches_visually_labeled_bite": true
+        },
+        {
+          "cast": 2,
+          "cast_start_estimate_s": 11.2,
+          "trigger_s": 22.316667,
+          "matches_visually_labeled_bite": true
+        },
+        {
+          "cast": 3,
+          "cast_start_estimate_s": 24.65,
+          "trigger_s": 32.833333,
+          "matches_visually_labeled_bite": true
+        },
+        {
+          "cast": 4,
+          "cast_start_estimate_s": 35.2,
+          "trigger_s": 43.883333,
+          "matches_visually_labeled_bite": true
+        },
+        {
+          "cast": 5,
+          "cast_start_estimate_s": 46.2,
+          "trigger_s": 54.1,
+          "matches_visually_labeled_bite": true
+        },
+        {
+          "cast": 6,
+          "cast_start_estimate_s": 58.7,
+          "trigger_s": 67.066667,
+          "matches_visually_labeled_bite": true
+        }
+      ]
+    },
+    {
+      "delay_s": 4,
+      "wait_for_calm_0_2s": false,
+      "matched_bites": 6,
+      "false_triggers": 0,
+      "results": [
+        {
+          "cast": 1,
+          "cast_start_estimate_s": 1.85,
+          "trigger_s": 8.2,
+          "matches_visually_labeled_bite": true
+        },
+        {
+          "cast": 2,
+          "cast_start_estimate_s": 11.2,
+          "trigger_s": 22.316667,
+          "matches_visually_labeled_bite": true
+        },
+        {
+          "cast": 3,
+          "cast_start_estimate_s": 24.65,
+          "trigger_s": 32.833333,
+          "matches_visually_labeled_bite": true
+        },
+        {
+          "cast": 4,
+          "cast_start_estimate_s": 35.2,
+          "trigger_s": 43.883333,
+          "matches_visually_labeled_bite": true
+        },
+        {
+          "cast": 5,
+          "cast_start_estimate_s": 46.2,
+          "trigger_s": 54.1,
+          "matches_visually_labeled_bite": true
+        },
+        {
+          "cast": 6,
+          "cast_start_estimate_s": 58.7,
+          "trigger_s": 67.066667,
+          "matches_visually_labeled_bite": true
+        }
+      ]
+    },
+    {
+      "delay_s": 3,
+      "wait_for_calm_0_2s": true,
+      "matched_bites": 6,
+      "false_triggers": 0,
+      "results": [
+        {
+          "cast": 1,
+          "cast_start_estimate_s": 1.85,
+          "trigger_s": 8.2,
+          "matches_visually_labeled_bite": true
+        },
+        {
+          "cast": 2,
+          "cast_start_estimate_s": 11.2,
+          "trigger_s": 22.316667,
+          "matches_visually_labeled_bite": true
+        },
+        {
+          "cast": 3,
+          "cast_start_estimate_s": 24.65,
+          "trigger_s": 32.833333,
+          "matches_visually_labeled_bite": true
+        },
+        {
+          "cast": 4,
+          "cast_start_estimate_s": 35.2,
+          "trigger_s": 43.883333,
+          "matches_visually_labeled_bite": true
+        },
+        {
+          "cast": 5,
+          "cast_start_estimate_s": 46.2,
+          "trigger_s": 54.1,
+          "matches_visually_labeled_bite": true
+        },
+        {
+          "cast": 6,
+          "cast_start_estimate_s": 58.7,
+          "trigger_s": 67.066667,
+          "matches_visually_labeled_bite": true
+        }
+      ]
+    }
+  ]
+}
