@@ -6,8 +6,15 @@
 
 ## 安装与使用
 
-1. 安装 64 位 Python 3.11+，下载源码到独立文件夹。
-2. 在项目目录打开 PowerShell，运行 `.\setup.ps1` 安装依赖。
+1. 安装 64 位 Python 3.11+（包含 pip 和 Tcl/Tk），下载并解压源码到独立文件夹。
+2. 在包含 `setup.ps1` 的项目目录打开 PowerShell，执行：
+
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1
+   ```
+
+   脚本会创建项目专用的 `.venv` 环境，并自动安装全部依赖，**无需提前单独安装 NumPy 等库**。命令中的执行策略仅对本次 PowerShell 进程生效。
+
 3. 双击 `start.cmd`。如果游戏以管理员权限运行，助手也需右键 **“以管理员身份运行”**。
 4. 选择游戏窗口，先用 **“识别预览”** 检查水花和鱼饵区域。预览不点击鼠标，需要自己抛竿并按住右键。
 5. 确认识别正常后收回鱼竿，选择 **“自动循环”**，点击开始，**5 秒内切回游戏**。
@@ -15,6 +22,19 @@
 已内置 2560 × 1600 画面下实测可用的两个区域，会按窗口尺寸缩放。**先试默认位置，不匹配时再框选。** 更换视角、分辨率或界面缩放后需重新检查。
 
 **F8 开始/暂停，F9 停止**；热键冲突时使用界面显示的备用组合键。切出游戏、异常或超时会暂停，并松开程序按住的鼠标键。
+
+### 依赖与缺失模块
+
+依赖包括 **NumPy、OpenCV（`opencv-python-headless`）、Pillow、mss、imageio-ffmpeg**，具体版本以 [requirements.txt](requirements.txt) 为准，由上述安装命令统一安装。
+
+若提示 `ModuleNotFoundError`，例如缺少 `numpy`、`cv2` 或 `PIL`，在项目目录执行：
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\start.cmd
+```
+
+若找不到 `.venv\Scripts\python.exe`，先重新执行第 2 步。请使用 `start.cmd` 启动，避免切换到未安装依赖的其他 Python 环境。若缺少 `tkinter`，需通过 Python 安装程序补装 Tcl/Tk 组件。
 
 ## 选点与框选
 
